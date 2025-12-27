@@ -26,3 +26,12 @@ export const createUser = (user) => {
     users.push(newUser);
     return newUser;
 };
+
+export const updateUser = (id, newName) => {
+    const user = getUserById(id);
+    if (user) {
+        user.name = newName;
+        return user;
+    }
+    return null;
+};

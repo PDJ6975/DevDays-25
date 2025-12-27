@@ -1,6 +1,6 @@
 import { body, validationResult } from 'express-validator';
 
-export const validateCreateUser = [
+export const validateCreateAndUpdateUser = [
     // Validate 'name' field
     body('name')
         .exists({ checkNull: true })
