@@ -18,7 +18,7 @@ const userCreationCounter = meter.createCounter('user_creation_count', {
 export const getUsers = async (req, res) => {
 	let span;
 	try {
-		const span = tracer.startSpan('getUsers');
+		span = tracer.startSpan('getUsers');
 		// Simulamos una operación asíncrona
 		await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -77,8 +77,7 @@ export const removeUser = (req, res) => {
 export const updateUser = (req, res) => {
 	try {
 		const { id } = req.params;
-		const { name } = req.body;
-		const updatedUser = updateUserService(id, name);
+		const updatedUser = updateUserService(id, req.body);
 		if (updatedUser) {
 			res.status(200).json(updatedUser);
 		} else {
