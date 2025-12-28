@@ -43,11 +43,6 @@ const prSchema = new mongoose.Schema({
 		required: true,
 		index: true, // índice simple
 	},
-	merged_by: {
-		login: String,
-		html_url: String,
-		type: String,
-	},
 	created_at: {
 		type: Date,
 		required: true,
@@ -60,11 +55,6 @@ const prSchema = new mongoose.Schema({
 	},
 	closed_at: Date,
 	merged_at: Date,
-	commits: Number,
-	additions: Number,
-	deletions: Number,
-	changed_files: Number,
-	comments: Number,
 	html_url: String,
 	diff_url: String,
 });

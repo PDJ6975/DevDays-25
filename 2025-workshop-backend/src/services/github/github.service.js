@@ -28,6 +28,10 @@ export const fetchGithubPaginatedData = async (
 		headers: {
 			Accept: 'application/vnd.github+json',
 			'X-GitHub-Api-Version': '2022-11-28',
+			// Añadir token si se encuentra en el .env para aumentar rate limit
+			...(process.env.GITHUB_TOKEN && {
+				Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+			}),
 		},
 	});
 
