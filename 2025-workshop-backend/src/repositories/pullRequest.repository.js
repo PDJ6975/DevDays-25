@@ -22,8 +22,16 @@ const create = async data => {
 	return await pullRequest.save();
 };
 
+/**
+ * Función que busca varias PRs por sus IDs
+ */
+const findByIds = async ids => {
+	return await PullRequest.find({ id: { $in: ids } });
+};
+
 export default {
 	findAll,
 	findById,
 	create,
+	findByIds,
 };
