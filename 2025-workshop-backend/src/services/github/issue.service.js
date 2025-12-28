@@ -1,5 +1,5 @@
-import axios from 'axios';
-import IssueRepository from '../repositories/issue.repository.js';
+import IssueRepository from '../../repositories/issue.repository.js';
+import { fetchGithubPaginatedData } from './github.service.js';
 
 export const getAllIssues = async () => {
 	return await IssueRepository.findAll();
@@ -9,11 +9,9 @@ export const getIssueByIssueId = async issueId => {
 	return await IssueRepository.findByIssueId(issueId);
 };
 
-export const fetchGithubIssues = async (repoOwner, repoName) => {
-	const response = await axios.get(
-		`https://api.github.com/repos/${repoOwner}/${repoName}/issues?state=all`
-	);
-	return response.data;
+export const fetchGithubIssues = async (repoOwner, repoName, state = 'all') => {
+	const url = `https://api.github.com/repos/${repoOwner}/${repoName}/issues`;
+	return await fetchGithubPaginatedData(url, { state });
 };
 
 export const saveIssues = async issues => {

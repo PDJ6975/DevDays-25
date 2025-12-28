@@ -1,4 +1,4 @@
-import issueService from '../services/issue.service.js';
+import issueService from '../services/github/issue.service.js';
 
 export const getAllIssues = async (req, res) => {
     try {
@@ -24,10 +24,9 @@ export const getIssueByIssueId = async (req, res) => {
 };
 
 export const fetchGithubIssues = async (req, res) => {
-    const repoOwner = req.body.repository.owner;
-    const repoName = req.body.repository.name;
+    const { owner, name, state = 'all' } = req.body.repository;
     try {
-        const githubIssues = await issueService.fetchGithubIssues(repoOwner, repoName);
+        const githubIssues = await issueService.fetchGithubIssues(owner, name, state);
         const savedIssues = await issueService.saveIssues(githubIssues);
         res.status(200).json(savedIssues);
     } catch (error) {
