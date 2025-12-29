@@ -1,4 +1,75 @@
 import axios from 'axios';
+import { metrics } from '@opentelemetry/api';
+
+const meter = metrics.getMeter('github-service-meter');
+let lastGithubApiCallTimestamp = null;
+
+/**
+ * Definición de meter de histograma para calcular el tiempo entre páginas consecutivas de una llamada a github
+ */
+const interPageLatencyHistogram = meter.createHistogram('github.api.inter_page_latency', {
+	description: 'Time elapsed between consecutive GitHub API requests',
+	unit: 'ms',
+});
+
+/**
+ * Construye la URL completa de GitHub API
+ * @param {string} url - URL relativa o absoluta
+ * @returns {string} URL completa
+ */
+const buildFullUrl = url => {
+	return url.startsWith('http') ? url : `https://api.github.com${url}`;
+};
+
+/**
+ * Construye los headers necesarios para las llamadas a la API
+ * @returns {object} Headers de configuración
+ */
+const buildGithubHeaders = () => {
+	return {
+		Accept: 'application/vnd.github+json',
+		'X-GitHub-Api-Version': '2022-11-28',
+		...(process.env.GITHUB_TOKEN && {
+			Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+		}),
+	};
+};
+
+/**
+ * Registra la métrica de latencia entre páginas consecutivas, almacenadno url y page para filtrado
+ * @param {string} url - Endpoint de GitHub
+ * @param {number} page - Número de página
+ */
+const recordInterPageLatency = (url, page) => {
+	const now = Date.now();
+
+	if (lastGithubApiCallTimestamp !== null) {
+		const interPageLatency = now - lastGithubApiCallTimestamp;
+		interPageLatencyHistogram.record(interPageLatency, {
+			endpoint: url,
+			page: page,
+		});
+	}
+
+	lastGithubApiCallTimestamp = now;
+};
+
+/**
+ * Resetea el contexto de medición de métricas
+ * Se usa al finalizar una operación de paginación completa
+ */
+const resetMetricContext = () => {
+	lastGithubApiCallTimestamp = null;
+};
+
+/**
+ * Verifica si hay más páginas disponibles en la paginación
+ * @param {string} linkHeader - Header 'Link' de la respuesta de GitHub
+ * @returns {boolean} true si hay siguiente página
+ */
+const hasNextPage = linkHeader => {
+	return linkHeader && linkHeader.includes('rel="next"');
+};
 
 /**
  * Función genérica recursiva para obtener datos paginados de cualquier endpoint de la API de GitHub
@@ -15,41 +86,30 @@ export const fetchGithubPaginatedData = async (
 	page = 1,
 	accumulatedData = []
 ) => {
-	// 1. Construir URL completa
-	const fullUrl = url.startsWith('http') ? url : `https://api.github.com${url}`;
+	const fullUrl = buildFullUrl(url);
 
-	// 2. Llamar a la API con paginación
+	recordInterPageLatency(url, page);
+
 	const response = await axios.get(fullUrl, {
 		params: {
-			...params, // Parámetros personalizados del usuario
-			per_page: 100, // Máximo permitido por GitHub
-			page, // Página actual
+			...params,
+			per_page: 100,
+			page,
 		},
-		headers: {
-			Accept: 'application/vnd.github+json',
-			'X-GitHub-Api-Version': '2022-11-28',
-			// Añadir token si se encuentra en el .env para aumentar rate limit
-			...(process.env.GITHUB_TOKEN && {
-				Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
-			}),
-		},
+		headers: buildGithubHeaders(),
 	});
 
-	// 3. Extraer los datos de esta página
 	const currentPageData = response.data;
-
-	// 4. Acumular los datos de esta página con los anteriores
 	const newAccumulatedData = [...accumulatedData, ...currentPageData];
-
-	// 5. Ver en el encabezado Link si hay referencia a la siguiente página
 	const linkHeader = response.headers.link;
 
-	// 6. CASO BASE: Si no hay más páginas, devolver todos los datos acumulados
-	if (!linkHeader || !linkHeader.includes('rel="next"')) {
+	// CASO BASE: No hay más páginas
+	if (!hasNextPage(linkHeader)) {
+		resetMetricContext();
 		return newAccumulatedData;
 	}
 
-	// 7. CASO RECURSIVO: Si hay siguiente página, llamar de nuevo
+	// CASO RECURSIVO: Hay siguiente página
 	return await fetchGithubPaginatedData(url, params, page + 1, newAccumulatedData);
 };
 
