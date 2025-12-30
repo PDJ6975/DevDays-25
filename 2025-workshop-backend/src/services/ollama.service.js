@@ -5,10 +5,13 @@ const openai = new OpenAI({
 	apiKey: 'ollama',
 });
 
+// Leer el modelo de Ollama desde variables de entorno
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL;
+
 export const generateText = async prompt => {
 	try {
 		const response = await openai.responses.create({
-			model: 'llama3.2:1b',
+			model: OLLAMA_MODEL,
 			input: prompt,
 		});
 		return response.output_text;

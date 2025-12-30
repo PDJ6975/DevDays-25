@@ -7,7 +7,7 @@
 		"start": "node ./src/server.js",
 		"dev": "node --env-file-if-exists=.env --watch ./src/server.js",
 		"test": "echo \"Error: no test specified\" && exit 1",
-		"check-ollama": "node ./src/scripts/check-ollama.js"
+		"check-ollama": "node --env-file-if-exists=.env ./src/scripts/check-ollama.js"
 	},
 	"keywords": [],
 	"author": "",
@@ -24,6 +24,7 @@
 		"@opentelemetry/semantic-conventions": "^1.38.0",
 		"@readme/openapi-parser": "^5.4.0",
 		"axios": "^1.13.2",
+		"chalk": "^5.6.2",
 		"decircular": "^1.0.0",
 		"express": "^5.2.1",
 		"express-validator": "^7.3.1",
