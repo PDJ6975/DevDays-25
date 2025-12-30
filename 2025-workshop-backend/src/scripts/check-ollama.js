@@ -151,7 +151,7 @@ async function main() {
 	// 4. Si está disponible -> configuración completa pasada
 	console.log(`Modelo '${REQUIRED_MODEL}': ${colors.green}✓ Disponible${colors.reset}`);
 	console.log(
-		`\n${colors.green}${colors.bright}✅ ¡Todo listo! Ollama está configurado correctamente.${colors.reset}`
+		`\n${colors.green}${colors.bright}✅ ¡Todo listo! Ollama está configurado correctamente. Asegura que lo tienes abierto antes de probar nuestro servicio de IA!${colors.reset}`
 	);
 
 	process.exit(0); // Salimos con código de éxito

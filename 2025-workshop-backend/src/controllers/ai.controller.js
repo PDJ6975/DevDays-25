@@ -7,6 +7,7 @@ export const generateAIResponse = async (req, res) => {
 		const aiResponse = await generateText(prompt);
 		res.status(200).json({ response: aiResponse });
 	} catch (error) {
+		console.log(error);
 		res.status(500).json({ message: 'Internal server error' });
 	}
 };
