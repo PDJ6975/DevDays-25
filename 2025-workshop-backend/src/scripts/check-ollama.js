@@ -9,7 +9,7 @@ import os from 'os';
 // Convertimos funcionamiento de exec (con callbacks) a promsesas con async/awayt usando promisify
 const execAsync = promisify(exec);
 
-// Colores para la terminal
+// Colores ANSI para la terminal
 const colors = {
 	reset: '\x1b[0m',
 	bright: '\x1b[1m',
@@ -18,6 +18,14 @@ const colors = {
 	red: '\x1b[31m',
 	cyan: '\x1b[36m',
 };
+
+// Funciones para encapsular los colores y mejorar la legibilidad del código
+const success = msg => `${colors.green}${msg}${colors.reset}`;
+const error = msg => `${colors.red}${msg}${colors.reset}`;
+const info = msg => `${colors.cyan}${msg}${colors.reset}`;
+const title = msg => `${colors.bright}${msg}${colors.reset}`;
+const warningBold = msg => `${colors.yellow}${colors.bright}${msg}${colors.reset}`;
+const successBold = msg => `${colors.green}${colors.bright}${msg}${colors.reset}`;
 
 // Modelo usado en el servicio (ver ollama.service.js:10)
 const REQUIRED_MODEL = 'llama3.2:1b';
@@ -68,7 +76,7 @@ async function checkModelAvailable() {
 			allModels: stdout,
 		};
 	} catch (error) {
-		// Si falla, puede ser que Ollama no esté corriendo o no esté instalado
+		// Si falla, puede ser que Ollama no esté corriendo o no esté instalado (aunque debe correr con ollama list)
 		return {
 			available: false,
 			error: error.message,
@@ -80,8 +88,8 @@ async function checkModelAvailable() {
  * Muestra instrucciones de instalación según el sistema operativo
  */
 function showInstallInstructions(osType) {
-	console.log(`\n${colors.yellow}${colors.bright}Ollama no está instalado${colors.reset}`);
-	console.log(`\n${colors.cyan}Instrucciones de instalación para ${osType}:${colors.reset}\n`);
+	console.log(`\n${warningBold('Ollama no está instalado')}`);
+	console.log(`\n${info(`Instrucciones de instalación para ${osType}:`)}\n`);
 
 	if (osType === 'macOS') {
 		console.log('Opción 1 - Homebrew (recomendado):');
@@ -99,19 +107,15 @@ function showInstallInstructions(osType) {
 		console.log('Visita: https://ollama.com/download');
 	}
 
-	console.log(
-		`\n${colors.cyan}Después de instalar, ejecuta este script nuevamente.${colors.reset}\n`
-	);
+	console.log(`\n${info('Después de instalar, ejecuta este script nuevamente.')}\n`);
 }
 
 /**
  * Muestra instrucciones para descargar el modelo
  */
 function showModelInstructions() {
-	console.log(
-		`\n${colors.yellow}${colors.bright}El modelo '${REQUIRED_MODEL}' no está disponible${colors.reset}`
-	);
-	console.log(`\n${colors.cyan}Para descargar el modelo:${colors.reset}\n`);
+	console.log(`\n${warningBold(`El modelo '${REQUIRED_MODEL}' no está disponible`)}`);
+	console.log(`\n${info('Para descargar el modelo:')}\n`);
 	console.log(`  ollama pull ${REQUIRED_MODEL}`);
 }
 
@@ -119,46 +123,44 @@ function showModelInstructions() {
  * Función principal
  */
 async function main() {
-	console.log(`\n${colors.bright}Verificando configuración de Ollama...${colors.reset}\n`);
+	console.log(`\n${title('Verificando configuración de Ollama...')}\n`);
 
 	// 1. Detectar sistema operativo
 	const osType = detectOS();
-	console.log(`Sistema operativo: ${colors.cyan}${osType}${colors.reset}`);
+	console.log(`Sistema operativo: ${info(osType)}`);
 
 	// 2. Verificar instalación de Ollama
 	const ollamaCheck = await checkOllamaInstalled();
 
 	// 2.1. Si no está instalado
 	if (!ollamaCheck.installed) {
-		console.log(`Ollama: ${colors.red}✗ No instalado${colors.reset}`);
+		console.log(`Ollama: ${error('✗ No instalado')}`);
 		showInstallInstructions(osType);
 		process.exit(1); // Salimos con código de error
 	}
 
 	// 2.2. Si está instalado
-	console.log(`Ollama: ${colors.green}✓ Instalado (${ollamaCheck.version})${colors.reset}`);
+	console.log(`Ollama: ${success(`✓ Instalado (${ollamaCheck.version})`)}`);
 
 	// 3. Verificar que el modelo esté disponible
 	const modelCheck = await checkModelAvailable();
 
 	// 3.1. Si no está disponible
 	if (!modelCheck.available) {
-		console.log(`Modelo '${REQUIRED_MODEL}': ${colors.red}✗ No disponible${colors.reset}`);
+		console.log(`Modelo '${REQUIRED_MODEL}': ${error('✗ No disponible')}`);
 		showModelInstructions();
 		process.exit(1);
 	}
 
 	// 4. Si está disponible -> configuración completa pasada
-	console.log(`Modelo '${REQUIRED_MODEL}': ${colors.green}✓ Disponible${colors.reset}`);
-	console.log(
-		`\n${colors.green}${colors.bright}✅ ¡Todo listo! Ollama está configurado correctamente. Asegura que lo tienes abierto antes de probar nuestro servicio de IA!${colors.reset}`
-	);
+	console.log(`Modelo '${REQUIRED_MODEL}': ${success('✓ Disponible')}`);
+	console.log(`\n${successBold('✅ ¡Todo listo! Ollama está configurado correctamente.')}`);
 
 	process.exit(0); // Salimos con código de éxito
 }
 
 // Ejecutar el script capturando errores no esperados
-main().catch(error => {
-	console.error(`\n${colors.red}Error inesperado: ${error.message}${colors.reset}\n`);
+main().catch(err => {
+	console.error(`\n${error(`Error inesperado: ${err.message}`)}\n`);
 	process.exit(1);
 });
