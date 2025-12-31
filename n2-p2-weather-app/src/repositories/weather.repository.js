@@ -74,10 +74,29 @@ const createMany = async dataArray => {
 	return await Weather.insertMany(dataArray, { ordered: false }); // ordered false para que si uno falla por duplicado continúen los demás
 };
 
+/**
+ * Obtiene documentos existentes que coincidan con las fechas proporcionadas
+ * @param {string} city - Nombre de la ciudad
+ * @param {string} countryCode - Código ISO del país
+ * @param {string[]} datesISO - Array de fechas en formato ISO string
+ * @returns {Promise<Array<{date: Date}>>} Array de documentos con solo el campo date
+ */
+const getExistingDates = async (city, countryCode, datesISO) => {
+	return await Weather.find(
+		{
+			city: city,
+			countryCode: countryCode,
+			date: { $in: datesISO },
+		},
+		{ date: 1, _id: 0 } // Solo devolvemos la fecha
+	);
+};
+
 export default {
 	getUniqueCities,
 	getWeatherByCityAndDate,
 	getWeatherByCityAndDates,
 	create,
 	createMany,
+	getExistingDates,
 };
