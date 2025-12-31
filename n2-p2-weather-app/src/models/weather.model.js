@@ -4,7 +4,11 @@ const weatherSchema = new mongoose.Schema({
 	city: {
 		type: String,
 		required: true,
-		index: true,
+	},
+
+	countryCode: {
+		type: String,
+		required: true,
 	},
 
 	latitude: {
@@ -38,7 +42,7 @@ const weatherSchema = new mongoose.Schema({
 });
 
 // Índice único compuesto: evita duplicar datos de misma ciudad/fecha
-weatherSchema.index({ city: 1, date: 1 }, { unique: true });
+weatherSchema.index({ city: 1, countryCode: 1, date: 1 }, { unique: true });
 
 const Weather = mongoose.model('Weather', weatherSchema);
 
