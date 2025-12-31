@@ -46,7 +46,7 @@ const callOpenMeteoAPI = async (latitude, longitude, startDate, endDate) => {
  * Obtiene datos meteorológicos históricos de OpenMeteo y los guarda en BD
  *
  * @param {string} city - Nombre de la ciudad
- * @param {string} countryCode - Código ISO del país
+ * @param {string} countryCode - Código ISO del país (opcional)
  * @param {string} startDate - Fecha inicio en formato YYYY-MM-DD
  * @param {string} endDate - Fecha fin en formato YYYY-MM-DD
  * @returns {Promise<Array<Object>>} Array de lecturas meteorológicas guardadas
