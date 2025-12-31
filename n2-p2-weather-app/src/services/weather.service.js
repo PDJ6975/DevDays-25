@@ -18,6 +18,7 @@ export const findWeatherByCityAndDates = async (city, countryCode, startDate, en
  * @param {string} countryCode - Código ISO del país (ej: "ES", "AR")
  * @param {Object} openMeteoResponse - Respuesta de OpenMeteo
  * @returns {Array<Object>} Array de documentos Weather listos para insertar
+ * @private
  */
 const mapOpenMeteoToWeatherDocs = (city, countryCode, openMeteoResponse) => {
 	return openMeteoResponse.daily.time
@@ -47,6 +48,7 @@ const mapOpenMeteoToWeatherDocs = (city, countryCode, openMeteoResponse) => {
  * @param {string} city - Nombre de la ciudad
  * @param {string} countryCode - Código ISO del país
  * @returns {Promise<Array<Object>>} Solo documentos que no existen en BD
+ * @private
  */
 const filterNewDocuments = async (weatherDocs, city, countryCode) => {
 	// Extraer fechas en formato ISO para la query
@@ -84,4 +86,8 @@ export const saveWeathers = async (city, countryCode, openMeteoResponse) => {
 
 	// 4. Devolver todos los documentos mapeados
 	return mappedWeathers;
+};
+
+export default {
+	saveWeathers,
 };

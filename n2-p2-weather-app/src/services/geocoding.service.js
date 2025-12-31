@@ -1,5 +1,10 @@
-// Llamamos a la api de geocoding con la cuidad y un código ISO.
+import WeatherService from './weather.service.js';
 
-// Si se proporciona código ISO y hay resultado -> obtenemos las coordenadas y devolvemos ciudad y coordenadas
+export const fetchCoordinatesOfCity = async (city, countryCode) => {
+	// Si se proporciona código ISO y hay resultado -> obtenemos las coordenadas y devolvemos ciudad y coordenadas
+	// Si no se proporciona código ISO y hay resultados -> seleccionamos el primero
+};
 
-// Si no se proporciona código ISO y hay resultados -> seleccionamos el primero
+export default {
+	fetchCoordinatesOfCity,
+};
