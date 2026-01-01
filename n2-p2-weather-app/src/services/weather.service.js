@@ -5,11 +5,26 @@ export const findUniqueCities = async () => {
 };
 
 export const findWeatherByCityAndDate = async (city, countryCode, date) => {
-	return await WeatherRepository.getWeatherByCityAndDate(city, countryCode, date);
+	const result = await WeatherRepository.getWeatherByCityAndDate(city, countryCode, date);
+
+	if (!result) return null;
+
+	// Formatear fecha para respuesta
+	return {
+		...result.toObject(), // Convertir documento Mongoose a objeto plano
+		date: formatDateToString(result.date),
+	};
 };
 
 export const findWeatherByCityAndDates = async (city, countryCode, startDate, endDate) => {
-	return await WeatherRepository.getWeatherByCityAndDates(city, countryCode, startDate, endDate);
+	const results = await WeatherRepository.getWeatherByCityAndDates(
+		city,
+		countryCode,
+		startDate,
+		endDate
+	);
+
+	return formatWeathersForResponse(results.map(doc => doc.toObject()));
 };
 
 /**
@@ -112,5 +127,8 @@ export const saveWeathers = async (city, countryCode, openMeteoResponse) => {
 };
 
 export default {
+	findUniqueCities,
+	findWeatherByCityAndDate,
+	findWeatherByCityAndDates,
 	saveWeathers,
 };
