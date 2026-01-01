@@ -1,6 +1,4 @@
 import axios from 'axios';
-import GeoCodingService from './geocoding.service.js';
-import WeatherService from './weather.service.js';
 
 /**
  * Construye la URL para OpenMeteo Archive API
@@ -27,6 +25,22 @@ const buildOpenMeteoURL = (latitude, longitude, startDate, endDate) => {
 };
 
 /**
+ * Calcula rango de fechas basándose en semanas hacia atrás desde hoy
+ * @param {number} weeksBack - Número de semanas hacia atrás
+ * @returns {{startDate: string, endDate: string}} Fechas en formato YYYY-MM-DD
+ */
+const calculateDateRange = weeksBack => {
+	const endDate = new Date(); // Hoy
+	const startDate = new Date();
+	startDate.setDate(endDate.getDate() - weeksBack * 7);
+
+	return {
+		startDate: startDate.toISOString().split('T')[0], // YYYY-MM-DD
+		endDate: endDate.toISOString().split('T')[0],
+	};
+};
+
+/**
  * Llama a OpenMeteo Archive API y devuelve datos históricos
  * @param {number} latitude - Latitud de la ubicación
  * @param {number} longitude - Longitud de la ubicación
@@ -36,54 +50,20 @@ const buildOpenMeteoURL = (latitude, longitude, startDate, endDate) => {
  * @throws {Error} Si la API falla o devuelve error
  * @private
  */
-const callOpenMeteoAPI = async (latitude, longitude, startDate, endDate) => {
+const callOpenMeteoAPI = async (latitude, longitude, weeksBack) => {
+	// Calcular rango de fechas
+	const { startDate, endDate } = calculateDateRange(weeksBack);
+
 	const url = buildOpenMeteoURL(latitude, longitude, startDate, endDate);
-	const response = await axios.get(url);
-	return response.data;
-};
-
-/**
- * Obtiene datos meteorológicos históricos de OpenMeteo y los guarda en BD
- *
- * @param {string} city - Nombre de la ciudad
- * @param {string} countryCode - Código ISO del país (opcional)
- * @param {string} startDate - Fecha inicio en formato YYYY-MM-DD
- * @param {string} endDate - Fecha fin en formato YYYY-MM-DD
- * @returns {Promise<Array<Object>>} Array de lecturas meteorológicas guardadas
- * @throws {Error} Si geocoding falla, OpenMeteo API falla, fechas inválidas, o error de BD
- */
-export const fetchHistoricalWeather = async (city, countryCode, startDate, endDate) => {
-	// Validar fechas
-	const start = new Date(startDate);
-	const end = new Date(endDate);
-
-	if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-		throw new Error('Invalid date format. Expected YYYY-MM-DD');
-	}
-
-	if (start > end) {
-		throw new Error('start_date must be before or equal to end_date');
-	}
 
 	try {
-		// 1. Obtener coordenadas de la ciudad
-		const { latitude, longitude } = await GeoCodingService.fetchCoordinatesOfCity(
-			city,
-			countryCode
-		);
-
-		// 2. Llamar a OpenMeteo API
-		const openMeteoData = await callOpenMeteoAPI(latitude, longitude, startDate, endDate);
-
-		// 3. Guardar en BD y devolver
-		return await WeatherService.saveWeathers(city, countryCode, openMeteoData);
+		const response = await axios.get(url);
+		return response.data;
 	} catch (error) {
-		throw new Error(
-			`Failed to fetch weather data for ${city}, ${countryCode}: ${error.message}`
-		);
+		throw new Error(`Error when trying to get a response from OpenMeteo API: ${error.message}`);
 	}
 };
 
 export default {
-	fetchHistoricalWeather,
+	callOpenMeteoAPI,
 };

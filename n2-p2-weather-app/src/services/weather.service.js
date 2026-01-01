@@ -65,12 +65,35 @@ const filterNewDocuments = async (weatherDocs, city, countryCode) => {
 };
 
 /**
+ * Formatea un objeto Date a string YYYY-MM-DD
+ * @param {Date} date - Fecha a formatear
+ * @returns {string} Fecha en formato YYYY-MM-DD
+ * @private
+ */
+const formatDateToString = date => {
+	return date.toISOString().split('T')[0];
+};
+
+/**
+ * Transforma los documentos internos a formato de respuesta
+ * @param {Array<Object>} weatherDocs - Documentos con date como Date object
+ * @returns {Array<Object>} Documentos con date como string YYYY-MM-DD
+ * @private
+ */
+const formatWeathersForResponse = weatherDocs => {
+	return weatherDocs.map(doc => ({
+		...doc,
+		date: formatDateToString(doc.date),
+	}));
+};
+
+/**
  * Guarda lecturas meteorológicas en la base de datos
  *
  * @param {string} city - Nombre de la ciudad
  * @param {string} countryCode - Código ISO del país (ej: "ES", "AR")
  * @param {Object} openMeteoResponse - Respuesta completa de OpenMeteo Archive API
- * @returns {Promise<Array<Object>>} Array de todos los documentos mapeados (insertados y duplicados)
+ * @returns {Promise<Array<Object>>} Array de documentos con fechas formateadas como string
  */
 export const saveWeathers = async (city, countryCode, openMeteoResponse) => {
 	// 1. Transformar respuesta de OpenMeteo a nuestro modelo
@@ -84,8 +107,8 @@ export const saveWeathers = async (city, countryCode, openMeteoResponse) => {
 		await WeatherRepository.createMany(newDocuments);
 	}
 
-	// 4. Devolver todos los documentos mapeados
-	return mappedWeathers;
+	// 4. Formatear fechas para respuesta (Date → string YYYY-MM-DD)
+	return formatWeathersForResponse(mappedWeathers);
 };
 
 export default {

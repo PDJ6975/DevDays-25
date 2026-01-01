@@ -13,7 +13,7 @@ const buildGeocodingURL = (city, countryCode) => {
 	const params = new URLSearchParams({
 		name: city,
 		language: 'es',
-		count: 1,
+		count: 2,
 	});
 
 	// Añadir countryCode solo si existe
@@ -55,6 +55,7 @@ export const fetchCoordinatesOfCity = async (city, countryCode) => {
 	return {
 		latitude: match.latitude,
 		longitude: match.longitude,
+		countryCode: match.country_code,
 	};
 };
 
