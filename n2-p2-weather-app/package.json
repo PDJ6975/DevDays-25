@@ -23,6 +23,7 @@
 		"@opentelemetry/semantic-conventions": "^1.38.0",
 		"@readme/openapi-parser": "^5.4.0",
 		"axios": "^1.13.2",
+		"dayjs": "^1.11.19",
 		"decircular": "^1.0.0",
 		"express": "^5.2.1",
 		"express-validator": "^7.3.1",
