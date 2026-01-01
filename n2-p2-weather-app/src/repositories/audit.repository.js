@@ -27,26 +27,19 @@ export const findAll = async (options = {}) => {
  * @returns {Promise<Array>} Array de auditorías
  */
 export const findByCityAndCountry = async (city, countryCode, options = {}) => {
-	const { limit = 50, sort = { createdAt: -1 } } = options;
+	const { limit = 50, skip = 0, sort = { createdAt: -1 }, dateFrom, dateTo } = options;
 
-	return await Audit.find({
-		city,
-		countryCode,
-	})
-		.sort(sort)
-		.limit(limit);
-};
+	// Construir filtro base
+	const filter = { city, countryCode };
 
-/**
- * Busca auditorías por cumplimiento
- * @param {boolean} compliant - true = cumplen, false = no cumplen
- * @param {Object} options - Opciones de query
- * @returns {Promise<Array>} Array de auditorías
- */
-const findByCompliance = async (compliant, options = {}) => {
-	const { limit = 50, sort = { createdAt: -1 } } = options;
+	// Añadir filtro de rango de fechas si se proporciona
+	if (dateFrom || dateTo) {
+		filter.dateFrom = {};
+		if (dateFrom) filter.dateFrom.$gte = new Date(dateFrom);
+		if (dateTo) filter.dateFrom.$lte = new Date(dateTo);
+	}
 
-	return await Audit.find({ compliant }).sort(sort).limit(limit);
+	return await Audit.find(filter).sort(sort).skip(skip).limit(limit);
 };
 
 /**
@@ -60,7 +53,6 @@ export const create = async auditData => {
 
 export default {
 	create,
-	findByCompliance,
 	findByAuditId,
 	findByCityAndCountry,
 	findAll,

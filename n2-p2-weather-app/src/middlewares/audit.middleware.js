@@ -1,8 +1,5 @@
 import { body, param, query, validationResult } from 'express-validator';
 
-/**
- * Middleware de validación para POST /api/v1/audits (crear auditoría)
- */
 export const validateCreateAudit = [
 	body('city')
 		.isString()
@@ -68,9 +65,6 @@ export const validateCreateAudit = [
 	},
 ];
 
-/**
- * Middleware de validación para GET /api/v1/audits/:auditId
- */
 export const validateGetAuditById = [
 	param('auditId')
 		.isString()
@@ -92,9 +86,6 @@ export const validateGetAuditById = [
 	},
 ];
 
-/**
- * Middleware de validación para GET /api/v1/audits (listar todas)
- */
 export const validateGetAllAudits = [
 	query('limit')
 		.optional()
@@ -120,9 +111,6 @@ export const validateGetAllAudits = [
 	},
 ];
 
-/**
- * Middleware de validación para GET /api/v1/audits/city/:city/:countryCode
- */
 export const validateGetAuditsByCity = [
 	param('city')
 		.isString()

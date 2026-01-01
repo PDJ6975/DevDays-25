@@ -78,11 +78,10 @@ export const getAllAudits = async (req, res) => {
 	try {
 		const { limit, skip, sort } = req.query;
 
-		const options = {
-			limit: limit ? parseInt(limit) : 50,
-			skip: skip ? parseInt(skip) : 0,
-			sort: sort ? JSON.parse(sort) : { createdAt: -1 },
-		};
+		const options = {};
+		if (limit) options.limit = parseInt(limit);
+		if (skip) options.skip = parseInt(skip);
+		if (sort) options.sort = JSON.parse(sort);
 
 		const audits = await AuditService.findAll(options);
 
@@ -102,18 +101,14 @@ export const getAuditsByCity = async (req, res) => {
 	const { city, countryCode } = req.params;
 
 	try {
-		const { limit, dateFrom, dateTo } = req.query;
+		const { limit, skip, sort, dateFrom, dateTo } = req.query;
 
-		const options = {
-			limit: limit ? parseInt(limit) : 50,
-			sort: { createdAt: -1 },
-		};
-
-		// Añadir filtro de fechas si se proporciona
-		if (dateFrom || dateTo) {
-			options.dateFrom = dateFrom;
-			options.dateTo = dateTo;
-		}
+		const options = {};
+		if (limit) options.limit = parseInt(limit);
+		if (skip) options.skip = parseInt(skip);
+		if (sort) options.sort = JSON.parse(sort);
+		if (dateFrom) options.dateFrom = dateFrom;
+		if (dateTo) options.dateTo = dateTo;
 
 		const audits = await AuditService.findByCityAndCountry(city, countryCode, options);
 

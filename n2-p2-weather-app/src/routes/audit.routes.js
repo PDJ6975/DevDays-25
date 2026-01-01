@@ -19,6 +19,6 @@ router.get('/', validateGetAllAudits, auditController.getAllAudits);
 router.get('/:auditId', validateGetAuditById, auditController.getAuditById);
 
 // Obtener auditorías de una ciudad específica
-router.get('/city/:city/:countryCode', validateGetAuditsByCity, auditController.getAuditsByCity);
+router.get('/:city/:countryCode', validateGetAuditsByCity, auditController.getAuditsByCity);
 
 export default router;
