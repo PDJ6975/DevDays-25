@@ -25,14 +25,15 @@ const buildOpenMeteoURL = (latitude, longitude, startDate, endDate) => {
 };
 
 /**
- * Calcula rango de fechas basándose en semanas hacia atrás desde hoy
+ * Calcula rango de fechas basándose en semanas hacia atrás desde ayer
  * @param {number} weeksBack - Número de semanas hacia atrás
  * @returns {{startDate: string, endDate: string}} Fechas en formato YYYY-MM-DD
  */
-export const calculateDateRange = weeksBack => {
-	const endDate = new Date(); // Hoy
+export const calculateDateRange = (weeksBack = 1) => {
+	const endDate = new Date(); // Ayer (hoy no porque puede no haber datos todavía en OpenMeteo)
+	endDate.setDate(endDate.getDate() - 1);
 	const startDate = new Date();
-	startDate.setDate(endDate.getDate() - weeksBack * 7 - 1); // Menos 1 para restar que incluya el día de hoy
+	startDate.setDate(endDate.getDate() - (weeksBack * 7 - 1)); // Menos 1 para restar que incluya el día de hoy
 
 	return {
 		startDate: startDate.toISOString().split('T')[0], // YYYY-MM-DD

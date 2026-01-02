@@ -6,7 +6,7 @@ export const fetchWeatherSummaryGPT = async (req, res) => {
 	const { city, countryCode } = req.body;
 	try {
 		// 1. Obtener fechas de inicio y de fin dado el día actual
-		const { startDate, endDate } = OpenMeteoService.calculateDateRange(1);
+		const { startDate, endDate } = OpenMeteoService.calculateDateRange();
 
 		// 2. Obtenemos los datos de esa semana para esa ciudad
 		const weatherData = await WeatherService.findWeatherByCityAndDates(

@@ -23,20 +23,27 @@ export const validateCreateAudit = [
 		.toUpperCase(), // Normalizar a mayúsculas automáticamente
 
 	body('dateFrom')
-		.isString()
-		.withMessage('dateFrom must be a string')
 		.notEmpty()
 		.withMessage('dateFrom is required')
 		.isISO8601()
 		.withMessage('dateFrom must be a valid ISO 8601 date (e.g., 2024-12-01)'),
 
 	body('dateTo')
-		.isString()
-		.withMessage('dateTo must be a string')
 		.notEmpty()
 		.withMessage('dateTo is required')
 		.isISO8601()
 		.withMessage('dateTo must be a valid ISO 8601 date (e.g., 2024-12-31)')
+		.custom(dateTo => {
+			const today = new Date();
+			today.setHours(0, 0, 0, 0); // normalizamos
+			const dateToObj = new Date(dateTo);
+			dateToObj.setHours(0, 0, 0, 0); // normalizamos
+
+			if (dateToObj >= today) {
+				throw new Error('dateTo must be before today (only complete days allowed)');
+			}
+			return true;
+		})
 		.custom((dateTo, { req }) => {
 			// Validar que dateTo >= dateFrom
 			if (new Date(dateTo) < new Date(req.body.dateFrom)) {
