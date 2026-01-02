@@ -1,5 +1,5 @@
 import WeatherRepository from '../repositories/weather.repository.js';
-import WeatherCodeMapper, { weatherCodeToDescription } from '../utils/weatherCodeMapper.js';
+import { weatherCodeToDescription } from '../utils/weatherCodeMapper.js';
 
 export const findUniqueCities = async () => {
 	return await WeatherRepository.getUniqueCities();

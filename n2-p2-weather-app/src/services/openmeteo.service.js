@@ -29,10 +29,10 @@ const buildOpenMeteoURL = (latitude, longitude, startDate, endDate) => {
  * @param {number} weeksBack - Número de semanas hacia atrás
  * @returns {{startDate: string, endDate: string}} Fechas en formato YYYY-MM-DD
  */
-const calculateDateRange = weeksBack => {
+export const calculateDateRange = weeksBack => {
 	const endDate = new Date(); // Hoy
 	const startDate = new Date();
-	startDate.setDate(endDate.getDate() - weeksBack * 7);
+	startDate.setDate(endDate.getDate() - weeksBack * 7 - 1); // Menos 1 para restar que incluya el día de hoy
 
 	return {
 		startDate: startDate.toISOString().split('T')[0], // YYYY-MM-DD
@@ -66,4 +66,5 @@ const callOpenMeteoAPI = async (latitude, longitude, weeksBack) => {
 
 export default {
 	callOpenMeteoAPI,
+	calculateDateRange,
 };
