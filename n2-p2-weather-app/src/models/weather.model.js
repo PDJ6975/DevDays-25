@@ -34,6 +34,12 @@ const weatherSchema = new mongoose.Schema({
 		required: true,
 	},
 
+	// Descripción del tiempo
+	weatherDescription: {
+		type: String,
+		required: true,
+	},
+
 	// Metadatos
 	createdAt: {
 		type: Date,

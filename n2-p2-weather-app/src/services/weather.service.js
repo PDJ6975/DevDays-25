@@ -1,4 +1,5 @@
 import WeatherRepository from '../repositories/weather.repository.js';
+import WeatherCodeMapper, { weatherCodeToDescription } from '../utils/weatherCodeMapper.js';
 
 export const findUniqueCities = async () => {
 	return await WeatherRepository.getUniqueCities();
@@ -39,9 +40,15 @@ const mapOpenMeteoToWeatherDocs = (city, countryCode, openMeteoResponse) => {
 	return openMeteoResponse.daily.time
 		.map((dateString, index) => {
 			const temperature = openMeteoResponse.daily.temperature_2m_mean[index];
+			const weatherCode = openMeteoResponse.daily.weather_code[index];
 
 			// Retornar null para días sin datos
-			if (temperature === null || temperature === undefined) {
+			if (
+				temperature === null ||
+				temperature === undefined ||
+				weatherCode === null ||
+				weatherCode === undefined
+			) {
 				return null;
 			}
 
@@ -52,6 +59,7 @@ const mapOpenMeteoToWeatherDocs = (city, countryCode, openMeteoResponse) => {
 				longitude: openMeteoResponse.longitude,
 				date: new Date(dateString),
 				temperatureMean: temperature,
+				weatherDescription: weatherCodeToDescription(weatherCode),
 			};
 		})
 		.filter(Boolean); // Saltar días sin datos disponibles (eliminando los null);

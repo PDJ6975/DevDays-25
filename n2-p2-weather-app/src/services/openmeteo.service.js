@@ -17,7 +17,7 @@ const buildOpenMeteoURL = (latitude, longitude, startDate, endDate) => {
 		longitude,
 		start_date: startDate,
 		end_date: endDate,
-		daily: 'temperature_2m_mean',
+		daily: 'temperature_2m_mean,weather_code',
 		timezone: 'auto',
 	});
 
