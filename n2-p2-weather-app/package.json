@@ -14,6 +14,7 @@
 	"type": "module",
 	"dependencies": {
 		"@opentelemetry/api": "^1.9.0",
+		"@opentelemetry/exporter-prometheus": "^0.208.0",
 		"@opentelemetry/instrumentation": "^0.208.0",
 		"@opentelemetry/instrumentation-http": "^0.208.0",
 		"@opentelemetry/resources": "^2.2.0",
