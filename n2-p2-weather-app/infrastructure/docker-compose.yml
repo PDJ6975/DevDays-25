@@ -1,0 +1,46 @@
+services:
+    mongodb:
+        image: mongo:7.0
+        restart: unless-stopped
+        ports:
+            - '27017:27017'
+        volumes:
+            - mongo_data:/data/db
+
+    weather-app:
+        image: weather-app:latest
+        restart: unless-stopped
+        ports:
+            - '${PORT:-3001}:3001'
+            - '${METRICS_PORT:-9464}:9464'
+        environment:
+            - PORT=${PORT:-3001}
+            - MONGO_URI=${MONGO_URI:-mongodb://mongodb:27017/weather-db}
+            - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+            - NODE_ENV=production
+        depends_on:
+            - mongodb
+
+    prometheus:
+        image: prom/prometheus
+        ports:
+            - '${PROMETHEUS_PORT:-9090}:9090'
+        volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+    grafana:
+        image: grafana/grafana
+        ports:
+            - '${GRAFANA_PORT:-3003}:3000'
+        environment:
+            - GF_SECURITY_ADMIN_USER=admin
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+            - GF_SMTP_ENABLED=${GRAFANA_SMTP_ENABLED:-false}
+            - GF_SMTP_HOST=smtp.gmail.com:587
+            - GF_SMTP_USER=${GRAFANA_SMTP_USER}
+            - GF_SMTP_PASSWORD=${GRAFANA_SMTP_PASSWORD}
+            - GF_SMTP_FROM_ADDRESS=${GRAFANA_SMTP_FROM_ADDRESS}
+            - GF_SMTP_FROM_NAME=Grafana Weather API
+
+volumes:
+    mongo_data:
