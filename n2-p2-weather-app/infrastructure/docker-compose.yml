@@ -41,6 +41,12 @@ services:
             - GF_SMTP_PASSWORD=${GRAFANA_SMTP_PASSWORD}
             - GF_SMTP_FROM_ADDRESS=${GRAFANA_SMTP_FROM_ADDRESS}
             - GF_SMTP_FROM_NAME=Grafana Weather API
+        volumes:
+            - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+            - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+            - ./grafana/provisioning/alerting:/etc/grafana/provisioning/alerting
+        depends_on:
+            - prometheus
 
 volumes:
     mongo_data:
