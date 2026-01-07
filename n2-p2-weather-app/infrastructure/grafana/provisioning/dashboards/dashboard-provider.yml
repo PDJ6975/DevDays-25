@@ -2,12 +2,11 @@ apiVersion: 1
 
 providers:
     - name: 'Weather API Dashboards'
-      orgId: 1
       folder: ''
       type: file
       disableDeletion: false
-      updateIntervalSeconds: 10
+      updateIntervalSeconds: 15 # 15 segundos para no tener demasiadas configuraciones distintas. Cada esos seg grafana busca cambios de json
       allowUiUpdates: true
       options:
           path: /etc/grafana/provisioning/dashboards
-          foldersFromFilesStructure: false
+          foldersFromFilesStructure: false # para que Grafana no cree subcarpetas

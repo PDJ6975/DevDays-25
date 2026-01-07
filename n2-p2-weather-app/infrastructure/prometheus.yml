@@ -5,10 +5,7 @@ scrape_configs:
     - job_name: 'weather-api'
       static_configs:
           # Configuración con docker compose (por defecto)
-          # - targets: ['weather-app:9464']
+          - targets: ['weather-app:9464']
 
           # Para desarrollo local, descomenta:
-          - targets: ['host.docker.internal:9464']
-
-          # Para Prometheus local (sin Docker), descomenta:
-          # - targets: ['localhost:9464']
+          # - targets: ['host.docker.internal:9464']
