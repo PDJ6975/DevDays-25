@@ -1,4 +1,6 @@
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import { bundle } from '@readme/openapi-parser';
 import { httpRequestDuration } from './otel.js';
 import weatherRoutes from './routes/weather.routes.js';
 import auditRoutes from './routes/audit.routes.js';
@@ -29,5 +31,14 @@ app.use((req, res, next) => {
 app.use('/api/v1/weather', weatherRoutes);
 app.use('/api/v1/audits', auditRoutes);
 app.use('/api/v1/ai', openaiRoutes);
+
+// Swagger UI
+bundle('src/docs/openapi.yaml')
+	.then(api => {
+		app.use('/docs', swaggerUi.serve, swaggerUi.setup(api));
+	})
+	.catch(err => {
+		console.error('Error loading OpenAPI document:', err);
+	});
 
 export default app;

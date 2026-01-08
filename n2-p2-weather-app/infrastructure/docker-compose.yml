@@ -8,6 +8,9 @@ services:
             - mongo_data:/data/db
 
     weather-app:
+        build:
+            context: ..
+            dockerfile: infrastructure/Dockerfile
         image: weather-app:latest
         restart: unless-stopped
         ports:

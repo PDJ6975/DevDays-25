@@ -1,0 +1,662 @@
+openapi: 3.1.0
+info:
+    title: Weather API
+    version: 1.0.0
+    description: API meteorológica con auditorías y resúmenes de IA del tiempo en los últimos 7 días
+
+servers:
+    - url: /
+      description: Development server
+
+tags:
+    - name: Weather
+      description: Consulta y almacenamiento de datos meteorológicos
+    - name: Audits
+      description: Auditorías de cumplimiento de temperatura de una ciudad en un intervalo de tiempo
+    - name: AI
+      description: Resúmenes meteorológicos con GPT Audio del tiempo en una ciudad en los últimos 7 días
+
+components:
+    schemas:
+        Error:
+            type: object
+            properties:
+                message:
+                    type: string
+                errors:
+                    type: array
+                    items:
+                        type: object
+
+        WeatherData:
+            type: object
+            description: Datos meteorológicos completos (incluye metadatos de MongoDB)
+            properties:
+                _id:
+                    type: string
+                    description: Identificador único del documento en MongoDB
+                    example: 507f1f77bcf86cd799439011
+                city:
+                    type: string
+                    description: Nombre de la ciudad
+                    example: Sevilla
+                countryCode:
+                    type: string
+                    description: Código ISO 3166-1 alpha-2 del país (2 letras mayúsculas)
+                    example: ES
+                latitude:
+                    type: number
+                    description: Latitud geográfica de la ciudad en grados decimales
+                    example: 37.3891
+                longitude:
+                    type: number
+                    description: Longitud geográfica de la ciudad en grados decimales
+                    example: -5.9845
+                date:
+                    type: string
+                    format: date
+                    description: Fecha del registro meteorológico en formato YYYY-MM-DD
+                    example: '2024-12-25'
+                temperatureMean:
+                    type: number
+                    description: Temperatura media del día en grados Celsius (°C)
+                    example: 18.5
+                weatherDescription:
+                    type: string
+                    description: Descripción textual del estado del tiempo
+                    example: parcialmente nublado
+                createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp de creación del registro en la base de datos
+                    example: '2024-12-25T10:30:00.000Z'
+                __v:
+                    type: integer
+                    description: Versión del documento de Mongoose
+                    example: 0
+
+        WeatherDataSimplified:
+            type: object
+            description: Datos meteorológicos sin metadatos internos de MongoDB
+            properties:
+                city:
+                    type: string
+                    description: Nombre de la ciudad
+                    example: Sevilla
+                countryCode:
+                    type: string
+                    description: Código ISO 3166-1 alpha-2 del país (2 letras mayúsculas)
+                    example: ES
+                latitude:
+                    type: number
+                    description: Latitud geográfica de la ciudad en grados decimales
+                    example: 37.3891
+                longitude:
+                    type: number
+                    description: Longitud geográfica de la ciudad en grados decimales
+                    example: -5.9845
+                date:
+                    type: string
+                    format: date
+                    description: Fecha del registro meteorológico en formato YYYY-MM-DD
+                    example: '2024-12-25'
+                temperatureMean:
+                    type: number
+                    description: Temperatura media del día en grados Celsius (°C)
+                    example: 18.5
+                weatherDescription:
+                    type: string
+                    description: Descripción textual del estado del tiempo
+                    example: parcialmente nublado
+
+        Audit:
+            type: object
+            description: Auditoría de cumplimiento de temperatura para una ciudad en un período de tiempo
+            properties:
+                auditId:
+                    type: string
+                    format: uuid
+                    description: Identificador único de la auditoría (UUID v4)
+                    example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                city:
+                    type: string
+                    description: Nombre de la ciudad auditada
+                    example: Sevilla
+                countryCode:
+                    type: string
+                    description: Código ISO 3166-1 alpha-2 del país (2 letras mayúsculas)
+                    example: ES
+                dateFrom:
+                    type: string
+                    format: date
+                    description: Fecha de inicio del período auditado (YYYY-MM-DD)
+                    example: '2024-12-01'
+                dateTo:
+                    type: string
+                    format: date
+                    description: Fecha de fin del período auditado (YYYY-MM-DD)
+                    example: '2024-12-31'
+                thresholdTemp:
+                    type: number
+                    description: Temperatura umbral en grados Celsius (°C) para determinar cumplimiento
+                    example: 18
+                compliant:
+                    type: boolean
+                    description: Indica si todas las semanas cumplieron el umbral de temperatura
+                    example: true
+                createdAt:
+                    type: string
+                    format: date-time
+                    description: Timestamp de creación de la auditoría
+                    example: '2024-12-25T10:30:00.000Z'
+                metadata:
+                    type: object
+                    description: Estadísticas agregadas del cumplimiento
+                    properties:
+                        totalWeeks:
+                            type: integer
+                            description: Total de semanas evaluadas en el período
+                            example: 5
+                        weeksCompliant:
+                            type: integer
+                            description: Número de semanas que cumplieron el umbral
+                            example: 4
+                        weeksNonCompliant:
+                            type: integer
+                            description: Número de semanas que no cumplieron el umbral
+                            example: 1
+                        complianceRate:
+                            type: number
+                            description: Porcentaje de cumplimiento (0-100)
+                            example: 80
+                        rule:
+                            type: string
+                            description: Regla de negocio aplicada en la auditoría
+                            example: 'avg_temp >= 18°C'
+                evidences:
+                    type: array
+                    description: Desglose semanal del cumplimiento con evidencias detalladas
+                    items:
+                        type: object
+                        properties:
+                            weekNumber:
+                                type: integer
+                                description: Número de semana dentro del período auditado
+                                example: 1
+                            weekStart:
+                                type: string
+                                format: date
+                                description: Fecha de inicio de la semana (YYYY-MM-DD)
+                                example: '2024-12-01'
+                            weekEnd:
+                                type: string
+                                format: date
+                                description: Fecha de fin de la semana (YYYY-MM-DD)
+                                example: '2024-12-07'
+                            avgTemp:
+                                type: number
+                                description: Temperatura media de la semana en grados Celsius (°C)
+                                example: 19.3
+                            daysInWeek:
+                                type: integer
+                                description: Número de días con datos en esa semana
+                                example: 7
+                            compliant:
+                                type: boolean
+                                description: Indica si esta semana cumplió el umbral
+                                example: true
+
+paths:
+    /api/v1/weather/fetch:
+        post:
+            tags:
+                - Weather
+            summary: Obtener datos históricos de OpenMeteo y guardar en BD
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - city
+                                - weeksBack
+                            properties:
+                                city:
+                                    type: string
+                                    minLength: 2
+                                    maxLength: 70
+                                    example: Sevilla
+                                countryCode:
+                                    type: string
+                                    minLength: 2
+                                    maxLength: 2
+                                    pattern: '^[A-Z]{2}$'
+                                    example: ES
+                                weeksBack:
+                                    type: integer
+                                    minimum: 1
+                                    example: 4
+            responses:
+                '200':
+                    description: Array de datos procesados (incluye nuevos y existentes, sin metadatos de MongoDB)
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/WeatherDataSimplified'
+                '400':
+                    description: Error de validación
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Error interno del servidor
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/weather/cities:
+        get:
+            tags:
+                - Weather
+            summary: Listar ciudades únicas almacenadas
+            responses:
+                '200':
+                    description: Lista de ciudades (array vacío si no hay datos)
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        city:
+                                            type: string
+                                            example: Sevilla
+                                        countryCode:
+                                            type: string
+                                            example: ES
+                '400':
+                    description: Error de validación
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Error interno del servidor
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/weather/city/date:
+        post:
+            tags:
+                - Weather
+            summary: Consultar clima de una ciudad en fecha específica
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - city
+                                - countryCode
+                                - date
+                            properties:
+                                city:
+                                    type: string
+                                    example: Sevilla
+                                countryCode:
+                                    type: string
+                                    pattern: '^[A-Z]{2}$'
+                                    example: ES
+                                date:
+                                    type: string
+                                    format: date
+                                    example: '2024-12-01'
+            responses:
+                '200':
+                    description: Datos meteorológicos encontrados
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/WeatherData'
+                '400':
+                    description: Error de validación
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: No se encontraron datos para esa ciudad y fecha
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Error interno del servidor
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/weather/city/date-range:
+        post:
+            tags:
+                - Weather
+            summary: Consultar clima en rango de fechas
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - city
+                                - countryCode
+                                - startDate
+                                - endDate
+                            properties:
+                                city:
+                                    type: string
+                                    example: Sevilla
+                                countryCode:
+                                    type: string
+                                    pattern: '^[A-Z]{2}$'
+                                    example: ES
+                                startDate:
+                                    type: string
+                                    format: date
+                                    example: '2024-12-01'
+                                endDate:
+                                    type: string
+                                    format: date
+                                    example: '2024-12-31'
+            responses:
+                '200':
+                    description: Array de datos meteorológicos (vacío si no hay datos)
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/WeatherData'
+                '400':
+                    description: Error de validación
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Error interno del servidor
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/audits:
+        post:
+            tags:
+                - Audits
+            summary: Crear auditoría de cumplimiento de temperatura
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - city
+                                - countryCode
+                                - dateFrom
+                                - dateTo
+                                - thresholdTemp
+                            properties:
+                                city:
+                                    type: string
+                                    example: Sevilla
+                                countryCode:
+                                    type: string
+                                    pattern: '^[A-Z]{2}$'
+                                    example: ES
+                                dateFrom:
+                                    type: string
+                                    format: date
+                                    example: '2024-12-01'
+                                dateTo:
+                                    type: string
+                                    format: date
+                                    example: '2024-12-31'
+                                thresholdTemp:
+                                    type: number
+                                    minimum: -50
+                                    maximum: 60
+                                    example: 18
+            responses:
+                '201':
+                    description: Auditoría creada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Audit'
+                '400':
+                    description: Error de validación o datos insuficientes
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Error interno del servidor
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+        get:
+            tags:
+                - Audits
+            summary: Listar todas las auditorías
+            parameters:
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 10
+                  description: Número máximo de resultados
+                - name: skip
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 0
+                      default: 0
+                  description: Número de resultados a omitir
+                - name: sort
+                  in: query
+                  schema:
+                      type: string
+                      example: '{"createdAt":-1}'
+                  description: 'Ordenamiento por uno de los campos de la auditoría (ej: {"createdAt":-1} para descendente)'
+            responses:
+                '200':
+                    description: Lista de auditorías
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Audit'
+                '500':
+                    description: Error interno del servidor
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/audits/{auditId}:
+        get:
+            tags:
+                - Audits
+            summary: Obtener auditoría por UUID
+            parameters:
+                - name: auditId
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      format: uuid
+            responses:
+                '200':
+                    description: Auditoría encontrada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Audit'
+                '400':
+                    description: UUID inválido
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '404':
+                    description: Auditoría no encontrada
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Error interno del servidor
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/audits/{city}/{countryCode}:
+        get:
+            tags:
+                - Audits
+            summary: Obtener auditorías de una ciudad
+            parameters:
+                - name: city
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                  example: Sevilla
+                - name: countryCode
+                  in: path
+                  required: true
+                  schema:
+                      type: string
+                      pattern: '^[A-Z]{2}$'
+                  example: ES
+                - name: limit
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 1
+                      maximum: 100
+                      default: 10
+                  description: Número máximo de resultados
+                - name: skip
+                  in: query
+                  schema:
+                      type: integer
+                      minimum: 0
+                      default: 0
+                  description: Número de resultados a omitir
+                - name: sort
+                  in: query
+                  schema:
+                      type: string
+                      example: '{"createdAt":-1}'
+                  description: 'Ordenamiento por uno de los campos de la auditoría (ej: {"createdAt":-1})'
+                - name: dateFrom
+                  in: query
+                  schema:
+                      type: string
+                      format: date
+                      example: '2024-12-01'
+                  description: Filtrar auditorías desde esta fecha
+                - name: dateTo
+                  in: query
+                  schema:
+                      type: string
+                      format: date
+                      example: '2024-12-31'
+                  description: Filtrar auditorías hasta esta fecha
+            responses:
+                '200':
+                    description: Lista de auditorías filtradas
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/Audit'
+                '500':
+                    description: Error interno del servidor
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/ai/audio-summary:
+        post:
+            tags:
+                - AI
+            summary: Generar resumen de audio con IA del tiempo en la última semana de una ciudad
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - city
+                                - countryCode
+                            properties:
+                                city:
+                                    type: string
+                                    example: Sevilla
+                                countryCode:
+                                    type: string
+                                    pattern: '^[A-Z]{2}$'
+                                    example: ES
+            responses:
+                '200':
+                    description: Audio MP3 binario (descarga directa)
+                    headers:
+                        X-Transcript:
+                            description: Transcripción del audio (URL-encoded)
+                            schema:
+                                type: string
+                        Content-Disposition:
+                            description: Nombre del archivo de descarga
+                            schema:
+                                type: string
+                                example: 'attachment; filename="resumen-Sevilla-ES.mp3"'
+                    content:
+                        audio/mpeg:
+                            schema:
+                                type: string
+                                format: binary
+                '400':
+                    description: Datos insuficientes (requiere 7 días completos)
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                '500':
+                    description: Error interno del servidor
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
