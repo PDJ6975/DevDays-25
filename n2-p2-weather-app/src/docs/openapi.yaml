@@ -28,6 +28,56 @@ components:
                     items:
                         type: object
 
+        IncompleteWeatherDataError:
+            type: object
+            description: Error específico cuando faltan datos meteorológicos para crear una auditoría
+            properties:
+                message:
+                    type: string
+                    description: Mensaje descriptivo del error indicando cuántos datos faltan
+                    example: 'Incomplete weather data: found 7/8 days (missing 1). Fetch complete data first: POST /api/v1/weather/fetch'
+                details:
+                    type: object
+                    description: Detalles técnicos sobre los datos faltantes e instrucciones para obtenerlos
+                    properties:
+                        found:
+                            type: integer
+                            description: Número de días con datos encontrados en la base de datos
+                            example: 7
+                        expected:
+                            type: integer
+                            description: Número de días esperados para el rango solicitado
+                            example: 8
+                        missing:
+                            type: integer
+                            description: Número de días faltantes
+                            example: 1
+                        fetchRequest:
+                            type: object
+                            description: Instrucciones para obtener los datos faltantes mediante la API
+                            properties:
+                                method:
+                                    type: string
+                                    description: Método HTTP a utilizar
+                                    example: POST
+                                endpoint:
+                                    type: string
+                                    description: Endpoint de la API para obtener los datos
+                                    example: /api/v1/weather/fetch
+                                body:
+                                    type: object
+                                    description: Cuerpo de la petición necesaria
+                                    properties:
+                                        city:
+                                            type: string
+                                            example: Valencia
+                                        countryCode:
+                                            type: string
+                                            example: ES
+                                        weeksBack:
+                                            type: integer
+                                            example: 2
+
         WeatherData:
             type: object
             description: Datos meteorológicos completos (incluye metadatos de MongoDB)
@@ -440,17 +490,43 @@ paths:
                                     example: 18
             responses:
                 '201':
-                    description: Auditoría creada
+                    description: Auditoría creada exitosamente
                     content:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Audit'
                 '400':
-                    description: Error de validación o datos insuficientes
+                    description: Error de validación o datos meteorológicos incompletos
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/Error'
+                                oneOf:
+                                    - $ref: '#/components/schemas/Error'
+                                    - $ref: '#/components/schemas/IncompleteWeatherDataError'
+                            examples:
+                                validationError:
+                                    summary: Error de validación de campos
+                                    value:
+                                        message: Validation failed
+                                        errors:
+                                            - msg: 'city is required'
+                                              param: 'city'
+                                              location: 'body'
+                                incompleteData:
+                                    summary: Datos meteorológicos incompletos
+                                    value:
+                                        message: 'Incomplete weather data: found 7/8 days (missing 1). Fetch complete data first: POST /api/v1/weather/fetch'
+                                        details:
+                                            found: 7
+                                            expected: 8
+                                            missing: 1
+                                            fetchRequest:
+                                                method: POST
+                                                endpoint: /api/v1/weather/fetch
+                                                body:
+                                                    city: Valencia
+                                                    countryCode: ES
+                                                    weeksBack: 2
                 '500':
                     description: Error interno del servidor
                     content:
