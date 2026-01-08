@@ -1,8 +1,3 @@
-/**
- * @fileoverview Servicio genérico para interactuar con la API de GitHub con paginación automática.
- * Incluye instrumentación de OpenTelemetry para monitoreo de latencia y tasa de errores.
- */
-
 import axios from 'axios';
 import { metrics } from '@opentelemetry/api';
 

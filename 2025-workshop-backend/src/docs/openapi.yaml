@@ -1,119 +1,408 @@
 openapi: 3.1.0
 info:
-  title: Isa DevDays Workshop API
-  description: This the API for the Isa DevDays Workshop.
-  version: 1.0.0
+    title: Isa DevDays Workshop API
+    description: This the API for the Isa DevDays Workshop.
+    version: 1.0.0
 
 servers:
-  - url: /
-    description: Development server
+    - url: /
+      description: Development server
 
 tags:
-  - name: Users
-    description: Operations related to users
+    - name: Users
+      description: Operations related to users
+    - name: GitHub
+      description: Generic GitHub API operations
+    - name: Pull Requests
+      description: Operations for managing GitHub Pull Requests
+
+components:
+    schemas:
+        Error:
+            type: object
+            description: Standard error response
+            properties:
+                message:
+                    type: string
+                    description: Error message describing what went wrong
+                    example: Internal Server Error
+
+        PullRequest:
+            type: object
+            description: GitHub Pull Request data stored in the database
+            properties:
+                _id:
+                    type: string
+                    description: MongoDB document ID
+                    example: 507f1f77bcf86cd799439011
+                repository:
+                    type: string
+                    description: Full repository name (owner/repo format)
+                    example: facebook/react
+                number:
+                    type: integer
+                    description: Pull Request number within the repository
+                    example: 28945
+                id:
+                    type: integer
+                    description: GitHub's unique Pull Request ID
+                    example: 1847529312
+                state:
+                    type: string
+                    description: Current state of the Pull Request
+                    enum: [open, closed]
+                    example: open
+                title:
+                    type: string
+                    description: Title of the Pull Request
+                    example: Fix memory leak in useEffect cleanup
+                body:
+                    type: string
+                    nullable: true
+                    description: Full description/body of the Pull Request (markdown)
+                    example: This PR fixes a memory leak that occurs when components unmount...
+                author:
+                    type: object
+                    description: Information about the Pull Request author
+                    properties:
+                        login:
+                            type: string
+                            description: GitHub username of the author
+                            example: octocat
+                        html_url:
+                            type: string
+                            description: URL to the author's GitHub profile
+                            example: https://github.com/octocat
+                        type:
+                            type: string
+                            description: Type of GitHub account
+                            example: User
+                merged:
+                    type: boolean
+                    description: Whether the Pull Request has been merged
+                    example: false
+                created_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the PR was created
+                    example: 2024-12-01T10:30:00Z
+                updated_at:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the PR was last updated
+                    example: 2024-12-15T14:22:00Z
+                closed_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Timestamp when the PR was closed (null if still open)
+                    example: null
+                merged_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    description: Timestamp when the PR was merged (null if not merged)
+                    example: null
+                html_url:
+                    type: string
+                    description: URL to the Pull Request on GitHub
+                    example: https://github.com/facebook/react/pull/28945
+                diff_url:
+                    type: string
+                    description: URL to view the diff of changes
+                    example: https://github.com/facebook/react/pull/28945.diff
+                __v:
+                    type: integer
+                    description: Mongoose version key
+                    example: 0
 
 paths:
-  /:
-    get:
-      summary: Root endpoint
-      description: Returns a welcome message.
-      responses:
-        "200":
-          description: Successful response
-          content:
-            application/json:
-              schema:
-                type: string
-                example: "Hello, ISA DevDays 2025!"
-  /api/v1/users:
-    get:
-      tags:
-        - Users
-      summary: Get all users
-      description: Retrieve a list of all users.
-      responses:
-        "200":
-          description: A list of users.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
+    /:
+        get:
+            summary: Root endpoint
+            description: Returns a welcome message.
+            responses:
+                '200':
+                    description: Successful response
+                    content:
+                        application/json:
+                            schema:
+                                type: string
+                                example: 'Hello, ISA DevDays 2025!'
+    /api/v1/users:
+        get:
+            tags:
+                - Users
+            summary: Get all users
+            description: Retrieve a list of all users.
+            responses:
+                '200':
+                    description: A list of users.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    type: object
+                                    properties:
+                                        id:
+                                            type: string
+                                        name:
+                                            type: string
+        post:
+            tags:
+                - Users
+            summary: Create a new user
+            description: Create a new user with the provided information.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                name:
+                                    type: string
+            responses:
+                '201':
+                    description: User created successfully.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    id:
+                                        type: string
+                                    name:
+                                        type: string
+                '400':
+                    description: Invalid input.
+    /api/v1/users/{id}:
+        get:
+            tags:
+                - Users
+            summary: Get user by ID
+            description: Retrieve a user by their ID.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
                       type: string
-                    name:
+                  description: The ID of the user to retrieve.
+            responses:
+                '200':
+                    description: A single user.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    id:
+                                        type: string
+                                    name:
+                                        type: string
+                '404':
+                    description: User not found.
+        delete:
+            tags:
+                - Users
+            summary: Delete a user
+            description: Delete a user by their ID.
+            parameters:
+                - in: path
+                  name: id
+                  required: true
+                  schema:
                       type: string
-    post:
-      tags:
-        - Users
-      summary: Create a new user
-      description: Create a new user with the provided information.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-      responses:
-        "201":
-          description: User created successfully.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  name:
-                    type: string
-        "400":
-          description: Invalid input.
-  /api/v1/users/{id}:
-    get:
-      tags:
-        - Users
-      summary: Get user by ID
-      description: Retrieve a user by their ID.
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: The ID of the user to retrieve.
-      responses:
-        "200":
-          description: A single user.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  name:
-                    type: string
-        "404":
-          description: User not found.
-    delete:
-      tags:
-        - Users
-      summary: Delete a user
-      description: Delete a user by their ID.
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: The ID of the user to delete.
-      responses:
-        "204":
-          description: User deleted successfully.
-        "404":
-          description: User not found.
+                  description: The ID of the user to delete.
+            responses:
+                '204':
+                    description: User deleted successfully.
+                '404':
+                    description: User not found.
+
+    /api/v1/github/fetch:
+        post:
+            tags:
+                - GitHub
+            summary: Fetch generic paginated data from GitHub API
+            description: |
+                Generic endpoint to fetch paginated data from any GitHub API endpoint.
+                Automatically handles pagination and returns all results.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - url
+                            properties:
+                                url:
+                                    type: string
+                                    description: GitHub API URL to fetch data from (without base URL)
+                                    example: /repos/facebook/react/issues
+                                params:
+                                    type: object
+                                    description: Optional query parameters to pass to the GitHub API
+                                    example:
+                                        state: all
+                                        per_page: 100
+                        examples:
+                            fetchOpenIssues:
+                                summary: Fetch open issues
+                                value:
+                                    url: /repos/anthropics/anthropic-sdk-python/issues
+                                    params:
+                                        state: open
+                            fetchOpenPullRequests:
+                                summary: Fetch open pull requests
+                                value:
+                                    url: /repos/anthropics/anthropic-sdk-python/pulls
+                                    params:
+                                        state: open
+            responses:
+                '200':
+                    description: Data successfully fetched from GitHub API
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                description: Array of data from GitHub (structure depends on endpoint)
+                                items:
+                                    type: object
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/pullrequests:
+        get:
+            tags:
+                - Pull Requests
+            summary: Get all Pull Requests from database
+            description: Retrieve all Pull Requests stored in the database
+            responses:
+                '200':
+                    description: List of all Pull Requests
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/PullRequest'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/pullrequests/{pullRequestId}:
+        get:
+            tags:
+                - Pull Requests
+            summary: Get a Pull Request by ID
+            description: Retrieve a specific Pull Request by its MongoDB document ID
+            parameters:
+                - in: path
+                  name: pullRequestId
+                  required: true
+                  schema:
+                      type: string
+                  description: MongoDB document ID of the Pull Request
+                  example: 507f1f77bcf86cd799439011
+            responses:
+                '200':
+                    description: Pull Request found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PullRequest'
+                '404':
+                    description: Pull Request not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                            example:
+                                message: Pull Request Not Found
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+    /api/v1/pullrequests/fetch:
+        post:
+            tags:
+                - Pull Requests
+            summary: Fetch Pull Requests from GitHub and save to database
+            description: |
+                Fetches Pull Requests from a GitHub repository and stores them in the database.
+                Avoids duplicates by checking GitHub PR IDs before insertion.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required:
+                                - repository
+                            properties:
+                                repository:
+                                    type: object
+                                    description: Repository information
+                                    required:
+                                        - owner
+                                        - name
+                                    properties:
+                                        owner:
+                                            type: string
+                                            description: GitHub repository owner username or organization
+                                            example: facebook
+                                        name:
+                                            type: string
+                                            description: Repository name
+                                            example: react
+                                        state:
+                                            type: string
+                                            description: Filter PRs by state (defaults to 'all')
+                                            enum: [open, closed, all]
+                                            default: all
+                                            example: all
+                        examples:
+                            fetchAllPRs:
+                                summary: Fetch all Pull Requests
+                                value:
+                                    repository:
+                                        owner: facebook
+                                        name: react
+                                        state: all
+                            fetchOpenPRs:
+                                summary: Fetch only open Pull Requests
+                                value:
+                                    repository:
+                                        owner: vercel
+                                        name: next.js
+                                        state: open
+            responses:
+                '200':
+                    description: Pull Requests fetched and saved successfully
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                description: Array of newly saved Pull Requests (excludes duplicates)
+                                items:
+                                    $ref: '#/components/schemas/PullRequest'
+                '500':
+                    description: Internal server error
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
