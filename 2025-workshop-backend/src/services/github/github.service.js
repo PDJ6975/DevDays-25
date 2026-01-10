@@ -149,9 +149,6 @@ const hasNextPage = linkHeader => {
  * @param {Array} [accumulatedData=[]] - Datos acumulados (uso interno para recursión)
  * @returns {Promise<Array>} Array con todos los datos paginados
  * @throws {Error} Si la petición a GitHub API falla
- *
- * @example
- * const issues = await fetchGithubPaginatedData('/repos/facebook/react/issues', { state: 'open' });
  */
 export const fetchGithubPaginatedData = async (
 	url,

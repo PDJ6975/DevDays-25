@@ -1,11 +1,15 @@
 /**
- * Script multisistema para verificar la instalación de Ollama.
+ * Script para verificar la instalación de Ollama.
  */
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import os from 'os';
 import chalk from 'chalk';
+import dotenv from 'dotenv';
+
+// Cargar variables de entorno desde .env
+dotenv.config();
 
 // Convertimos funcionamiento de exec (con callbacks) a promesas con async/await usando promisify
 const execAsync = promisify(exec);
