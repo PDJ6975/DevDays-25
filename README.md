@@ -1,4 +1,4 @@
-# DevDays 2025 - ¿Cómo levantar cada aplicación?
+# ¿Cómo levantar cada una de las apps?
 
 ## Estructura del Proyecto
 
