@@ -5,7 +5,7 @@
 El proyecto consta de tres aplicaciones independientes:
 
 - **2025-workshop-backend**: Backend base modificado realizado en el taller
-- **n2-p2-weather-app** (creada desde cero): API meteorológica con OpenTelemetry, Prometheus y Grafana en el que se desarrolla la propuesta de nivel 2
+- **n2-p2-weather-app** (creada desde cero): API meteorológica con OpenTelemetry, Prometheus y Grafana en la que se desarrolla la propuesta de nivel 2
 - **dev-days-25-frontend**: Frontend Next.js elaborado en el taller
 
 ## Configuración Inicial

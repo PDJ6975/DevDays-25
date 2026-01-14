@@ -6,6 +6,9 @@ Este documento detalla la implementación completa de los entregables realizados
 
 ## Índice
 
+### Entregables de Nivel 0
+- [N0: Proyecto base del taller completado](#n0-proyecto-base-del-taller-completado)
+
 ### Entregables de Nivel 1
 - [N1-1: Función recursiva - Paginación de datos de la API de GitHub](#n1-1-función-recursiva-paginación-de-datos-de-la-api-de-github)
 - [N1-2: Creación de métricas personalizadas](#n1-2-creación-de-métricas-personalizadas)
@@ -15,6 +18,101 @@ Este documento detalla la implementación completa de los entregables realizados
 - [N2-P2-A: Auditoría sobre datos meteorológicos](#n2-p2-a-auditoría-sobre-datos-meteorológicos)
 - [N2-P2-B: Audio resumen del tiempo pasado con IA](#n2-p2-b-audio-resumen-del-tiempo-pasado-con-ia)
 - [N2-P2-C: Instrumentación y observabilidad con Prometheus/Grafana](#n2-p2-c-instrumenta-y-mide-el-tiempo-de-respuesta-de-la-api-de-weather)
+
+---
+
+# ENTREGABLE DE NIVEL 0
+
+## N0: Proyecto base del taller completado
+
+**Descripción:** Finalización del proyecto base desarrollado durante el taller, incluyendo las tareas extra propuestas y los TODOs pendientes.
+
+### Implementaciones realizadas
+
+Todas las modificaciones se han realizado sobre `2025-workshop-backend`, la aplicación principal del taller.
+
+#### 1. Endpoint PUT /users/:id (Tarea Extra)
+
+Se implementó el endpoint para actualizar usuarios que se proponía como tarea extra.
+
+**Archivos modificados:**
+- `src/routes/user.routes.js` - Definición de la ruta
+- `src/controllers/user.controller.js` - Controlador `updateUser`
+- `src/services/user.service.js` - Servicio `updateUser`
+
+**Endpoint:**
+```
+PUT http://localhost:3000/api/v1/users/:id
+Body: {
+  "name": "Nuevo nombre",
+  "email": "nuevo@email.com"
+}
+```
+
+El endpoint utiliza el mismo middleware de validación que el POST (`validateCreateAndUpdateUser`).
+
+#### 2. Validación máximo 50 caracteres (Tarea Extra)
+
+Se añadió la validación de longitud máxima de 50 caracteres al middleware de usuarios.
+
+**Archivo modificado:** `src/middlewares/user.middleware.js`
+
+```javascript
+.isLength({ min: 3, max: 50 })
+.withMessage('Name must be between 3 and 50 characters long')
+```
+
+#### 3. Campo updatedAt en Issues (TODO completado)
+
+Se completaron los TODOs para almacenar el campo `updated_at` de los issues de GitHub.
+
+**Archivos modificados:**
+- `src/models/issue.model.js` - Añadido campo `updatedAt` al esquema
+- `src/services/github/issue.service.js` - Mapeo de `issueData.updated_at` a `updatedAt`
+
+```javascript
+// issue.model.js
+updatedAt: {
+  type: Date,
+  required: true,
+}
+
+// issue.service.js (en saveIssues)
+updatedAt: issueData.updated_at,
+```
+
+#### 4. Telemetría completada
+
+Se finalizó toda la configuración de telemetría del tema 7 que no dio tiempo a completar durante el taller, siguiendo el tema dado.
+
+**Archivo principal:** `src/otel.js`
+
+#### 5. Timeout simulado en span (Tarea Extra)
+
+Se añadió un timeout dentro del try/catch del controlador `getUsers` para simular una operación asíncrona y observar cómo afecta al span creado.
+
+**Archivo modificado:** `src/controllers/user.controller.js`
+
+```javascript
+export const getUsers = async (req, res) => {
+  let span;
+  try {
+    span = tracer.startSpan('getUsers');
+    // Simulamos una operación asíncrona
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    const users = getAllUsers();
+    span.setAttribute('user.count', users.length);
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  } finally {
+    if (span) {
+      span.end();
+    }
+  }
+};
+```
 
 ---
 
