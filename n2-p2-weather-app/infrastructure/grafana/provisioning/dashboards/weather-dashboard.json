@@ -394,7 +394,7 @@
 					"refId": "A"
 				}
 			],
-			"title": "95% de peticiones deben tardar menos de....",
+			"title": "99% de peticiones deben tardar menos de....",
 			"type": "stat"
 		},
 		{
