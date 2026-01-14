@@ -6,6 +6,8 @@ services:
             - '27017:27017'
         volumes:
             - mongo_data:/data/db
+        networks:
+            - devdays-network
 
     weather-app:
         build:
@@ -23,6 +25,8 @@ services:
             - NODE_ENV=production
         depends_on:
             - mongodb
+        networks:
+            - devdays-network
 
     prometheus:
         image: prom/prometheus
@@ -53,3 +57,7 @@ services:
 
 volumes:
     mongo_data:
+
+networks:
+    devdays-network:
+        name: devdays-network
