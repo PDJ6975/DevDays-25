@@ -5,8 +5,6 @@ const openai = new OpenAI({
 });
 
 export const compactWeatherInfo = (weatherData, city, countryCode) => {
-	console.log(weatherData);
-	console.log(weatherData.length);
 	// 1. Validamos que haya un registro de 7 datos (7 días)
 	if (!weatherData || weatherData.length !== 7) {
 		const error = Error(
