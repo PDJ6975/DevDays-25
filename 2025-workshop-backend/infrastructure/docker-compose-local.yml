@@ -21,6 +21,9 @@ services:
       - backend
 
   devdays-app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
     image: devdays-app:latest
     restart: unless-stopped
     environment:
