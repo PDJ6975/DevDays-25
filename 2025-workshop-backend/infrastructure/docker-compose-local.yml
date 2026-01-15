@@ -30,6 +30,9 @@ services:
       PORT: 3000
       MONGO_URI: mongodb://mongodb:27017/isadevdays2025
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      OLLAMA_URL: http://host.docker.internal:11434/v1
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
     ports:
       - "${HOST_PORT:-3000}:3000"
     networks:

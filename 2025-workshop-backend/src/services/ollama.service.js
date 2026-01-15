@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
-	baseURL: 'http://localhost:11434/v1',
+	baseURL: process.env.OLLAMA_URL || 'http://localhost:11434/v1',
 	apiKey: 'ollama',
 });
 
