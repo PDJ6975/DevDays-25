@@ -23,8 +23,7 @@ build/
 *.log
 
 # Environment files
-.env*
-**/.env*
+.env
 
 # OS files
 .DS_Store
