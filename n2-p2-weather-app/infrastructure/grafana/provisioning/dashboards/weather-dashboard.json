@@ -24,7 +24,7 @@
 		{
 			"datasource": {
 				"type": "prometheus",
-				"uid": "${DS_PROMETHEUS}"
+				"uid": "prometheus"
 			},
 			"description": "Tiempo promedio de respuesta en segundos por endpoint excluyendo IA. Se usa un intervalo de 5 minutos para evitar suavizar cambios en tendencia general.",
 			"fieldConfig": {
@@ -109,7 +109,7 @@
 				{
 					"datasource": {
 						"type": "prometheus",
-						"uid": "${DS_PROMETHEUS}"
+						"uid": "prometheus"
 					},
 					"editorMode": "code",
 					"exemplar": false,
@@ -129,7 +129,7 @@
 		{
 			"datasource": {
 				"type": "prometheus",
-				"uid": "${DS_PROMETHEUS}"
+				"uid": "prometheus"
 			},
 			"description": "Se reserva un panel para el tiempo de respuesta del endpoint de IA porque su tiempo de respuesta es mucho mayor que el resto de endpoints.",
 			"fieldConfig": {
@@ -241,7 +241,7 @@
 		{
 			"datasource": {
 				"type": "prometheus",
-				"uid": "${DS_PROMETHEUS}"
+				"uid": "prometheus"
 			},
 			"description": "Número de peticiones por segundo para cada endpoint calculada en intervalos de un minuto.",
 			"fieldConfig": {
@@ -333,7 +333,7 @@
 		{
 			"datasource": {
 				"type": "prometheus",
-				"uid": "${DS_PROMETHEUS}"
+				"uid": "prometheus"
 			},
 			"fieldConfig": {
 				"defaults": {
@@ -400,7 +400,7 @@
 		{
 			"datasource": {
 				"type": "prometheus",
-				"uid": "${DS_PROMETHEUS}"
+				"uid": "prometheus"
 			},
 			"fieldConfig": {
 				"defaults": {
