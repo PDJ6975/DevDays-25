@@ -59,7 +59,7 @@ Los repositorios comparten una red Docker (`devdays-network`) para usar un únic
 
 ```bash
 cd n2-p2-weather-app/infrastructure
-docker-compose up -d
+docker-compose --env-file ../.env up -d
 ```
 
 Esto levanta:
@@ -74,7 +74,7 @@ Una vez que la infraestructura de weather-app está corriendo:
 
 ```bash
 cd 2025-workshop-backend/infrastructure
-docker-compose -f docker-compose-local.yml up -d
+docker-compose -f docker-compose-local.yml --env-file ../.env up -d
 ```
 
 Esto levanta:
@@ -97,7 +97,7 @@ Si prefieres ejecutar las aplicaciones localmente en lugar de en contenedores:
 ```bash
 # 1. Levantar solo infraestructura
 cd n2-p2-weather-app/infrastructure
-docker-compose up -d mongodb prometheus grafana
+docker-compose --env-file ../.env up -d mongodb prometheus grafana
 
 # 2. Modificar prometheus.yml para apuntar a host.docker.internal:9464
 
